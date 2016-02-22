@@ -9,8 +9,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const useragent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.54 Safari/537.36"
-
 // Product asdf
 type Product struct {
 	url  string
@@ -26,7 +24,7 @@ func price(product Product, wg *sync.WaitGroup) {
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", useragent)
+	req.Header.Set("User-Agent", GetRandomUA())
 
 	response, err := client.Do(req)
 	if err != nil {
@@ -54,7 +52,6 @@ func price(product Product, wg *sync.WaitGroup) {
 
 func main() {
 	var wg sync.WaitGroup
-
 	products := [2]Product{
 		Product{"http://www.amazon.com/dp/B00PXYRMPE", "Dell 34 in curved monitor"},
 		Product{"http://www.amazon.com/dp/B00OKSEWL6", "LG 34 in curved monitor"}}
