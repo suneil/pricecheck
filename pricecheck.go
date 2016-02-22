@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+const useragent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.54 Safari/537.36"
 
 // Product asdf
 type Product struct {
@@ -15,9 +18,21 @@ type Product struct {
 }
 
 func price(product Product, wg *sync.WaitGroup) {
+	client := &http.Client{}
 	defer wg.Done()
 
-	doc, err := goquery.NewDocument(product.url)
+	req, err := http.NewRequest("GET", product.url, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	req.Header.Set("User-Agent", useragent)
+
+	response, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	doc, err := goquery.NewDocumentFromResponse(response)
 	if err != nil {
 		log.Fatal(err)
 	}
