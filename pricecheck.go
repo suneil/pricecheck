@@ -9,6 +9,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+//go:generate go run scripts/includetxt.go
+
+var (
+	client = &http.Client{}
+)
+
 // Product asdf
 type Product struct {
 	url  string
@@ -16,7 +22,6 @@ type Product struct {
 }
 
 func price(product Product, wg *sync.WaitGroup) {
-	client := &http.Client{}
 	defer wg.Done()
 
 	req, err := http.NewRequest("GET", product.url, nil)
