@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
+// run go generate whenever useragents.txt is changed
 //go:generate go run scripts/includetxt.go
 
 var (
@@ -17,13 +17,12 @@ var (
 
 // Product asdf
 type Product struct {
-	url  string
-	name string
+	url      string
+	name     string
+	respChan chan *http.Response
 }
 
-func price(product Product, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func fetch(product *Product) {
 	req, err := http.NewRequest("GET", product.url, nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -35,6 +34,13 @@ func price(product Product, wg *sync.WaitGroup) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	product.respChan <- response
+}
+
+func price(product *Product) {
+	response := <-product.respChan
+
 	doc, err := goquery.NewDocumentFromResponse(response)
 	if err != nil {
 		log.Fatal(err)
@@ -56,15 +62,15 @@ func price(product Product, wg *sync.WaitGroup) {
 }
 
 func main() {
-	var wg sync.WaitGroup
 	products := [2]Product{
-		Product{"http://www.amazon.com/dp/B00PXYRMPE", "Dell 34 in curved monitor"},
-		Product{"http://www.amazon.com/dp/B00OKSEWL6", "LG 34 in curved monitor"}}
+		Product{"http://www.amazon.com/dp/B00PXYRMPE", "Dell 34 in curved monitor", make(chan *http.Response, 1)},
+		Product{"http://www.amazon.com/dp/B00OKSEWL6", "LG 34 in curved monitor", make(chan *http.Response, 1)}}
 
-	for _, product := range products {
-		wg.Add(1)
-		go price(product, &wg)
+	for idx := range products {
+		go fetch(&products[idx])
 	}
 
-	wg.Wait()
+	for _, product := range products {
+		price(&product)
+	}
 }
