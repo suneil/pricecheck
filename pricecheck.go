@@ -15,7 +15,7 @@ var (
 	client = &http.Client{}
 )
 
-// Product asdf
+// Product product structure
 type Product struct {
 	url      string
 	name     string
