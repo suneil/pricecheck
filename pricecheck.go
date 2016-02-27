@@ -1,9 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"path"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -46,6 +49,7 @@ func price(product *Product) {
 		log.Fatal(err)
 	}
 
+	var price32 float64
 	price := ""
 	title := product.name
 
@@ -53,12 +57,19 @@ func price(product *Product) {
 		price = s.Text()
 	})
 
+	price = strings.Replace(price, "$", "", -1)
+	price32, err = strconv.ParseFloat(price, 64)
+	if err != nil {
+		price32 = 0.0
+	}
+
 	doc.Find("#productTitle").Each(func(i int, s *goquery.Selection) {
 		title = s.Text()
 	})
 
-	fmt.Printf("%s => %s\n", price, title)
-
+	u, _ := url.Parse(product.url)
+	item := NewItem(path.Base(u.Path), title, price32)
+	Store(item)
 }
 
 func main() {

@@ -8,14 +8,14 @@ import (
 )
 
 var (
-	path          = "ua.txt"
+	uaPath        = "ua.txt"
 	useragentList []string
 )
 
 // GetRandomUA get random user agent string
 func GetRandomUA() string {
 	if len(useragentList) == 0 {
-		// inFile, err := os.Open(path)
+		// inFile, err := os.Open(uaPath)
 		// if err != nil {
 		// 	log.Fatalln(err)
 		// }
