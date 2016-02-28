@@ -9,10 +9,9 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/suneil/pricecheck/store"
+	"github.com/suneil/useragent"
 )
-
-// run go generate whenever useragents.txt is changed
-//go:generate go run scripts/includetxt.go
 
 var (
 	client = &http.Client{}
@@ -31,7 +30,7 @@ func fetch(product *Product) {
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", GetRandomUA())
+	req.Header.Set("User-Agent", useragent.GetRandomUserAgent())
 
 	response, err := client.Do(req)
 	if err != nil {
@@ -68,8 +67,8 @@ func price(product *Product) {
 	})
 
 	u, _ := url.Parse(product.url)
-	item := NewItem(path.Base(u.Path), title, price32)
-	Store(item)
+	item := store.NewItem(path.Base(u.Path), title, price32)
+	store.Store(item)
 }
 
 func main() {
