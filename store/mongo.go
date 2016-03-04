@@ -21,7 +21,7 @@ func NewItem(id string, name string, price float64) *Item {
 		id,
 		name,
 		price,
-		time.Now(),
+		time.Now().UTC(),
 	}
 
 	return item
