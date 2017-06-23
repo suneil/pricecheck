@@ -34,7 +34,7 @@ func fetch(product *Product) {
 
 	response, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(product.name, err)
 	}
 
 	product.respChan <- response
@@ -52,14 +52,29 @@ func price(product *Product) {
 	price := ""
 	title := product.name
 
-	doc.Find("#priceblock_ourprice").Each(func(i int, s *goquery.Selection) {
+	doc.Find("#priceblock_saleprice").Each(func(i int, s *goquery.Selection) {
 		price = s.Text()
 	})
+
+	if price == "" {
+		doc.Find("#priceblock_ourprice").Each(func(i int, s *goquery.Selection) {
+			price = s.Text()
+		})
+	}
+
+	if price == "" {
+		doc.Find("span.offer-price").Each(func(i int, s *goquery.Selection) {
+			price = s.Text()
+		})
+	}
 
 	price = strings.Replace(price, "$", "", -1)
 	price32, err = strconv.ParseFloat(price, 64)
 	if err != nil {
 		price32 = 0.0
+		log.Printf("Error with {{%s}} parsing price '%s' into float (%v)", product.name, price, err)
+
+		return
 	}
 
 	doc.Find("#productTitle").Each(func(i int, s *goquery.Selection) {
@@ -72,9 +87,12 @@ func price(product *Product) {
 }
 
 func main() {
-	products := [2]Product{
+	products := []Product{
+		Product{"http://www.amazon.com/dp/B00FK0ELM8", "Beats Headphones", make(chan *http.Response, 1)},
 		Product{"http://www.amazon.com/dp/B00PXYRMPE", "Dell 34 in curved monitor", make(chan *http.Response, 1)},
-		Product{"http://www.amazon.com/dp/B00OKSEWL6", "LG 34 in curved monitor", make(chan *http.Response, 1)}}
+		Product{"http://www.amazon.com/dp/B00OKSEWL6", "LG 34 in curved monitor", make(chan *http.Response, 1)},
+		Product{"http://www.amazon.com/dp/B01I3LNMAM", "Fuji X-T2", make(chan *http.Response, 1)},
+	}
 
 	for idx := range products {
 		go fetch(&products[idx])
